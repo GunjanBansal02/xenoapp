@@ -97,32 +97,51 @@ export class DatabaseStorage implements IStorage {
 
     // Build dynamic where clause based on rules
     const conditions = rules.map((rule, index) => {
-      const field = customers[rule.field as keyof typeof customers];
-      if (!field) return null;
-
       let condition;
       const value = rule.field.includes('Spend') || rule.field.includes('amount') 
         ? parseFloat(rule.value) 
         : parseInt(rule.value) || rule.value;
 
-      switch (rule.operator) {
-        case '>':
-          condition = gt(field, value);
+      switch (rule.field) {
+        case 'totalSpend':
+          switch (rule.operator) {
+            case '>': condition = gt(customers.totalSpend, value.toString()); break;
+            case '>=': condition = gte(customers.totalSpend, value.toString()); break;
+            case '<': condition = lt(customers.totalSpend, value.toString()); break;
+            case '<=': condition = lte(customers.totalSpend, value.toString()); break;
+            case '=': condition = eq(customers.totalSpend, value.toString()); break;
+            case '!=': condition = ne(customers.totalSpend, value.toString()); break;
+            default: return null;
+          }
           break;
-        case '>=':
-          condition = gte(field, value);
+        case 'visitCount':
+          switch (rule.operator) {
+            case '>': condition = gt(customers.visitCount, value as number); break;
+            case '>=': condition = gte(customers.visitCount, value as number); break;
+            case '<': condition = lt(customers.visitCount, value as number); break;
+            case '<=': condition = lte(customers.visitCount, value as number); break;
+            case '=': condition = eq(customers.visitCount, value as number); break;
+            case '!=': condition = ne(customers.visitCount, value as number); break;
+            default: return null;
+          }
           break;
-        case '<':
-          condition = lt(field, value);
+        case 'segment':
+          switch (rule.operator) {
+            case '=': condition = eq(customers.segment, rule.value); break;
+            case '!=': condition = ne(customers.segment, rule.value); break;
+            default: return null;
+          }
           break;
-        case '<=':
-          condition = lte(field, value);
-          break;
-        case '=':
-          condition = eq(field, value);
-          break;
-        case '!=':
-          condition = ne(field, value);
+        case 'lastOrderDate':
+          // For date comparisons, treat value as days ago
+          const daysAgo = new Date(Date.now() - (value as number) * 24 * 60 * 60 * 1000);
+          switch (rule.operator) {
+            case '>': condition = lt(customers.lastOrderDate, daysAgo); break; // More days ago means earlier date
+            case '>=': condition = lte(customers.lastOrderDate, daysAgo); break;
+            case '<': condition = gt(customers.lastOrderDate, daysAgo); break;
+            case '<=': condition = gte(customers.lastOrderDate, daysAgo); break;
+            default: return null;
+          }
           break;
         default:
           return null;
@@ -135,7 +154,7 @@ export class DatabaseStorage implements IStorage {
 
     // For simplicity, we'll use AND logic for now
     // In a real implementation, you'd parse the connector logic
-    const whereClause = conditions.length === 1 ? conditions[0] : and(...conditions);
+    const whereClause = conditions.length === 1 ? conditions[0]! : and(...conditions.filter(c => c !== null));
     
     return await db.select().from(customers).where(whereClause);
   }

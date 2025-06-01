@@ -207,7 +207,7 @@ export default function DashboardPage() {
                     <div>
                       <p className="font-medium text-emerald-900 mb-1">Segment Performance</p>
                       <p className="text-sm text-emerald-700">
-                        Customers who spent >₹10K show 95% delivery rate. Consider creating similar high-value segments.
+                        Customers who spent {'>'}₹10K show 95% delivery rate. Consider creating similar high-value segments.
                       </p>
                     </div>
                   </div>

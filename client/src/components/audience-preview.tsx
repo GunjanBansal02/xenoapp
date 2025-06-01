@@ -48,7 +48,7 @@ export default function AudiencePreview({ rules }: AudiencePreviewProps) {
           {audienceSize > 0 && (
             <div className="space-y-3">
               <div className="flex justify-between py-2 border-b border-slate-100">
-                <span className="text-sm text-slate-600">High spenders (>₹10K)</span>
+                <span className="text-sm text-slate-600">High spenders ({'>'}₹10K)</span>
                 <span className="text-sm font-medium text-slate-900">
                   {breakdown.highSpenders || 0}
                 </span>
